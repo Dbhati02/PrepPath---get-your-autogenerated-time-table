@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+
+  <body
+    class="bg-gradient-to-br from-lime-100 via-green-100 to-emerald-200 font-[Quicksand] text-gray-800 flex flex-col min-h-screen">
+
+    <!-- ✅ Navbar -->
+    <%- include('partials/navbar') %>
+
+      <!-- ✅ Alert Toast -->
+      <% if (typeof message !=='undefined' && message) { %>
+        <div id="alert-bar"
+          class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-white text-emerald-700 border border-emerald-400 px-6 py-3 rounded-full shadow-lg z-50 flex items-center gap-2 transition-all duration-500 opacity-0 scale-95">
+          <img src="/images/bell.avif" class="w-5 h-5" />
+          <span>
+            <%= message %>
+          </span>
+        </div>
+
+        <script>
+          window.addEventListener("DOMContentLoaded", () => {
+            const alert = document.getElementById("alert-bar");
+            alert.classList.remove("opacity-0", "scale-95");
+
+            setTimeout(() => {
+              alert.classList.add("opacity-0", "scale-95");
+            }, 1200);
+
+            setTimeout(() => {
+              alert.remove();
+            }, 1600);
+          });
+        </script>
+        <% } %>
+
+          <!-- 🍀 Full Timetable Page -->
+          <main class="flex-grow max-w-6xl w-full mx-auto px-6 py-14">
+            <!-- 📆 Title Section -->
+            <div class="flex items-center justify-center gap-4 mb-12">
+              <img src="/images/calendar3.png" alt="Calendar" class="w-10 h-10 sm:w-14 sm:h-14">
+              <h1 class="text-4xl sm:text-5xl font-bold text-emerald-700 text-center drop-shadow-md">
+                Your Full Study Timetable
+              </h1>
+            </div>
+
+            <% if (Object.keys(groupedPlans).length===0) { %>
+              <!-- 🚫 No Plan UI -->
+              <div class="text-center text-gray-600 bg-white/60 p-6 rounded-xl shadow-md backdrop-blur-md">
+                <p class="text-lg font-semibold text-rose-600">No plans created yet.</p>
+                <p class="text-sm text-gray-700 mt-2">Please add all your subjects and their syllabus first, then
+                  generate or create a plan manually.</p>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                  <a href="/api/subject/create"
+                    class="bg-emerald-500 text-white px-5 py-2 rounded-full shadow hover:bg-emerald-600">
+                    ➕ Add Subjects
+                  </a>
+                  <form action="/api/dailyPlan/autogenerate" method="POST">
+                    <button type="submit"
+                      class="bg-rose-500 text-white px-5 py-2 rounded-full shadow hover:bg-rose-600">
+                      📅 Generate Full Plan
+                    </button>
+                  </form>
+                </div>
+              </div>
+              <% } else { %>
+
+                <% Object.keys(groupedPlans).forEach((date)=> { %>
+                  <div
+                    class="bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-300 mb-10 w-full">
+                    <!-- 📅 Date Header -->
+                    <div class="flex items-center justify-between mb-6">
+                      <h2 class="text-2xl font-bold text-emerald-700 flex items-center gap-2">
+                        📅 <%= date %>
+                      </h2>
+                      <img src="/images/owl.jpg" alt="Animal"
+                        class="w-12 h-12 rounded-full shadow-md border-2 border-white">
+                    </div>
+
+                    <!-- ✅ Task List -->
+                    <% groupedPlans[date].forEach((task)=> { %>
+                      <div
+                        class="flex items-start gap-3 bg-white/90 shadow-sm rounded-xl p-4 border-l-4 <%= task.completed ? 'border-green-500' : 'border-yellow-400' %> mb-3">
+                        <input type="checkbox" class="mt-1 w-5 h-5 text-emerald-500 accent-emerald-500 cursor-pointer"
+                          <%=task.completed ? 'checked' : '' %>
+                        onchange="updateTaskStatus('<%= task.planId %>', <%= task.taskIndex %>, this.checked)"
+                            title="Click to mark as done"
+                            >
+                            <div>
+                              <p class="text-base font-semibold text-gray-800">📘 <%= task.subject %>
+                              </p>
+                              <p class="text-sm text-gray-700">📖 <%= task.topic %>
+                              </p>
+                              <p class="text-xs mt-1 <%= task.completed ? 'text-green-600' : 'text-yellow-600' %>">
+                                <%= task.completed ? '✅ Completed' : '⏳ Not Completed' %>
+                              </p>
+                            </div>
+                      </div>
+                      <% }) %>
+                  </div>
+                  <% }) %>
+
+                    <!-- 🗑️ Delete Entire Plan Button -->
+                    <div class="flex justify-end mt-6">
+                      <form action="/api/dailyPlan/deleteAll" method="POST">
+                        <button type="submit"
+                          class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full shadow">
+                          🗑️ Delete Entire Plan
+                        </button>
+                      </form>
+                    </div>
+                    <% } %>
+          </main>
+
+          <%- include('partials/footer') %>
+
+            <!-- ✅ Reusable Script -->
+            <script>
+              async function updateTaskStatus(planId, taskIndex, completed) {
+                try {
+                  const res = await fetch(`/api/dailyPlan/updateTheStatusPlan/${planId}`, {
+                    method: 'PATCH',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ taskIndex, completed }),
+                  });
+
+                  const data = await res.json();
+                  if (res.ok) {
+                    location.reload();
+                  } else {
+                    alert(data.error || 'Failed to update task status');
+                  }
+                } catch (error) {
+                  console.error('Error updating task:', error);
+                  alert('Something went wrong');
+                }
+              }
+            </script>
+
+  </body>
+
+</html>

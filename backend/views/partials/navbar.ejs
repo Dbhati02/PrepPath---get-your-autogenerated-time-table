@@ -1,0 +1,104 @@
+<!-- Alpine.js for interactivity -->
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+<!-- Navbar -->
+<nav class="bg-[#f66472] shadow-md font-[Quicksand]" x-data="{ menuOpen: false, profileOpen: false }">
+  <div class="flex justify-between items-center px-6 py-4">
+    <!-- Branding -->
+    <div class="flex items-center gap-2">
+      <img src="/images/calender.png" class="w-10 h-10" alt="Logo">
+      <span class="text-3xl font-extrabold tracking-wide text-white drop-shadow-md">PrepPath</span>
+    </div>
+
+    <!-- Desktop Nav Links -->
+    <div class="hidden md:flex gap-3 items-center">
+      <a href="/" class="text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition-all">Home</a>
+      <a href="/api/dailyPlan/create" class="text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition-all">Create Task</a>
+      <a href="/api/dailyPlan/getAllPlans" class="text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition-all">MyPlan</a>
+      <a href="/api/user/login" class="text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition-all">Login</a>
+      <a href="/api/user/register" class="text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition-all">Register</a>
+
+      <!-- Profile Dropdown -->
+      <div class="relative" x-data="{ open: false }">
+        <button @click="open = !open" class="focus:outline-none">
+          <img src="/images/placeholder.avif" class="w-9 h-9 rounded-full border-2 border-white shadow-md hover:scale-105 transition-transform" alt="Profile">
+        </button>
+        <div x-show="open" @click.outside="open = false" class="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg py-2 z-50">
+          <a href="/api/user/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">View Profile</a>
+          <a href="/api/user/updateProfile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Update Profile</a>
+          <button onclick="handleLogout()" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Hamburger Button -->
+    <div class="md:hidden">
+      <button @click="menuOpen = !menuOpen" class="text-white focus:outline-none">
+        <svg x-show="!menuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg x-show="menuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Nav Menu -->
+  <div x-show="menuOpen" @click.outside="menuOpen = false" class="md:hidden px-6 pb-4 space-y-2">
+    <a href="/" class="block text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition">Home</a>
+    <a href="/api/dailyPlan/create" class="block text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition">Create Task</a>
+    <a href="/api/dailyPlan/getAllPlans" class="block text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition">MyPlan</a>
+    <a href="/api/user/login" class="block text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition">Login</a>
+    <a href="/api/user/register" class="block text-sm bg-white/70 text-gray-700 py-2 px-4 rounded-full hover:bg-white/90 shadow-sm transition">Register</a>
+
+    <!-- Profile Options in Mobile -->
+    <div class="pt-2 border-t mt-2">
+      <a href="/api/user/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">View Profile</a>
+      <a href="/api/user/updateProfile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Update Profile</a>
+      <button onclick="handleLogout()" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Toast Alert Bar using EJS -->
+<% if (typeof message !== 'undefined' && message) { %>
+  <div id="alert-bar"
+       class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-white text-rose-500 border border-rose-300 px-6 py-3 rounded-full shadow-lg z-50 flex items-center gap-2 transition-all duration-500 opacity-0 scale-95">
+    <img src="/images/bell.avif" class="w-5 h-5" />
+    <span><%= message %></span>
+  </div>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const alert = document.getElementById("alert-bar");
+      if (alert) {
+        alert.classList.remove("opacity-0", "scale-95");
+        setTimeout(() => alert.classList.add("opacity-0", "scale-95"), 1000);
+        setTimeout(() => alert.remove(), 1500);
+      }
+    });
+  </script>
+<% } %>
+
+<!-- Logout Script -->
+<script>
+  async function handleLogout() {
+    try {
+      const res = await fetch('/api/user/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (res.ok) {
+        window.location.href = '/?message=' + encodeURIComponent('Logged out successfully!');
+      } else {
+        window.location.href = '/?message=' + encodeURIComponent('Logout failed. Please try again.');
+      }
+    } catch (err) {
+      window.location.href = '/?message=' + encodeURIComponent('Logout error: ' + err.message);
+    }
+  }
+</script>

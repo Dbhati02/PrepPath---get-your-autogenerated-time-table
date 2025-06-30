@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-lime-100 via-green-100 to-emerald-100 font-[Quicksand] text-gray-800 overflow-x-hidden">
+
+  <!-- Navbar -->
+  <%- include('partials/navbar') %>
+
+  <!-- Main Content -->
+  <main class="flex-grow max-w-2xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-bold text-emerald-600 text-center mb-8">📅 Today's Study Plan</h1>
+
+    <% if (plan && plan.tasks && plan.tasks.length > 0) { %>
+      <div class="bg-white shadow-lg rounded-2xl p-6 space-y-4 border-l-4 border-emerald-500">
+        <% plan.tasks.forEach((task, index) => { %>
+          <div class="flex items-start gap-4 bg-white shadow-md rounded-xl p-4 border border-emerald-200">
+            <input 
+              type="checkbox" 
+              class="mt-1 w-5 h-5 text-emerald-500 accent-emerald-500 cursor-pointer"
+              <%= task.completed ? 'checked' : '' %>
+              onchange="updateTaskStatus('<%= plan._id %>', <%= index %>, this.checked)"
+              title="Mark as done"
+            >
+            <div>
+              <p class="text-lg font-semibold text-gray-700">📘 Subject: <%= task.subject %></p>
+              <p class="text-md text-gray-600">📖 Topic: <%= task.topic %></p>
+              <p class="text-sm mt-1">
+                <%= task.completed ? '✅ Completed' : '❌ Not Completed' %>
+              </p>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <!-- No Tasks -->
+      <div class="bg-white/80 rounded-2xl shadow-lg p-6 border border-rose-300 text-center space-y-4">
+        <img src="/images/panda.jpg" alt="No Plan" class="w-24 h-24 mx-auto rounded-full shadow-md">
+        <h2 class="text-xl font-semibold text-rose-600">Oops! No plan for today </h2>
+        <p class="text-gray-600">Looks like you haven't created a study plan for today yet.</p>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-4">
+          <a href="/api/dailyPlan/create" class="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-full font-semibold transition">
+            ➕ Create Manual Task
+          </a>
+          <a href="/api/dailyPlan/getAllPlans" class="bg-rose-400 hover:bg-rose-500 text-white px-4 py-2 rounded-full font-semibold transition">
+            📋 View Full Timetable
+          </a>
+        </div>
+      </div>
+    <% } %>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-rose-200 text-center py-4 mt-auto">
+    <div class="text-lg">
+      🐥✏️⏰ Made for Students | © 2025 <span class="text-rose-600 font-bold">StudyNest</span>
+    </div>
+  </footer>
+
+  <!-- Script to update task status -->
+  <script>
+    async function updateTaskStatus(planId, taskIndex, completed) {
+      try {
+        const res = await fetch(`/api/dailyPlan/updateTheStatusPlan/${planId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ taskIndex, completed }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          location.reload(); // Reload to update UI
+        } else {
+          alert(data.error || 'Failed to update task status');
+        }
+      } catch (error) {
+        console.error('Error updating task:', error);
+        alert('Something went wrong');
+      }
+    }
+  </script>
+
+</body>
+</html>

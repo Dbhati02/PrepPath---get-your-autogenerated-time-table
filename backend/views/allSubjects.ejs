@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/head') %>
+
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script>
+    function confirmDelete(url) {
+      if (confirm("Are you sure you want to delete this subject?")) {
+        window.location.href = url;
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-[#f3ffcc] text-gray-900 overflow-x-hidden flex flex-col min-h-screen font-[Quicksand]">
+  <%- include('partials/navbar') %>
+
+  <main class="flex-grow max-w-7xl mx-auto w-full px-6 py-12">
+
+    <!-- 📚 Heading -->
+    <h1 class="text-5xl font-[Playfair Display] font-bold text-center text-[#987070] mb-14 tracking-wide drop-shadow-xl">
+      All Subjects
+    </h1>
+
+    <% if (subjects.length === 0) { %>
+      <div class="bg-white/90 text-center text-gray-800 p-6 rounded-2xl shadow-lg backdrop-blur-md border border-purple-200">
+        <p class="text-lg font-medium">No subjects added yet.</p>
+        <a href="/api/subject/create" class="inline-block mt-3 text-purple-700 underline hover:text-purple-900 font-semibold">➕ Add Subject</a>
+      </div>
+    <% } else { %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        <% subjects.forEach(subject => { %>
+          <div class="bg-[#ffffff] backdrop-blur-xl rounded-2xl p-4 shadow-xl border border-indigo-200 hover:scale-[1.015] transition-transform duration-300 flex flex-col justify-between min-h-[240px]">
+
+
+            <!-- 📘 Subject Name -->
+            <h2 class="text-2xl font-[Playfair Display] font-semibold text-[#664d4d] mb-3">
+              <%= subject.name %>
+            </h2>
+
+            <!-- 📋 Syllabus List -->
+            <ul class="list-disc ml-5 text-base text-gray-800 font-[Quicksand] space-y-1 mb-6 flex-grow">
+              <% subject.syllabus.forEach(topic => { %>
+                <li><%= topic %></li>
+              <% }) %>
+            </ul>
+
+            <!-- 🔧 Action Buttons -->
+            <div class="flex justify-end gap-3 mt-auto">
+              <a href="/api/subject/update/<%= subject._id %>" 
+                class="px-4 py-2 bg-indigo-500 hover:bg-indigo-700 active:scale-95 text-white text-sm rounded-lg font-semibold shadow transition-transform duration-150">
+                Update
+              </a>
+              <a href="javascript:void(0);" 
+                onclick="confirmDelete('/api/subject/delete/<%= subject._id %>')" 
+                class="px-4 py-2 bg-rose-500 hover:bg-rose-700 active:scale-95 text-white text-sm rounded-lg font-semibold shadow transition-transform duration-150">
+                Delete
+              </a>
+            </div>
+
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </main>
+</body>
+</html>
